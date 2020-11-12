@@ -3,14 +3,17 @@ import re
 import numpy as np
 import nltk
 import unicodedata
-from nltk.tag import CRFTagger, BrillTagger, BrillTaggerTrainer, RegexpTagger
+from nltk.tag import CRFTagger, BrillTagger, untag, BrillTaggerTrainer, RegexpTagger
 from nltk.corpus import treebank
+from nltk.tbl.template import Template
+from nltk.tag.brill import Pos, Word
+
 
 train_sentences = treebank.tagged_sents()[:3000]
 test_sentences = treebank.tagged_sents()[3000:]
 
 """
-Question 1: Redefine this function so that it considers the context
+Question 3: Redefine this function so that it considers the context
 """
 def feature_func(tokens, idx):
     """
@@ -60,7 +63,7 @@ def feature_func(tokens, idx):
 
     return feature_list
 
-def question1():
+def question3():
     tagger = CRFTagger(feature_func=feature_func)
 
     tagger.train(train_sentences, 'model.crf.tagger')
@@ -69,9 +72,9 @@ def question1():
     return
 
 """
-Question 2: Train using BrillTagger
+Question 4: Train using BrillTagger
 """
-def question2():
+def question4():
     #Taken from http://www.nltk.org/book/ch05.html
     patterns = [
         (r'.*ing$', 'VBG'),  # gerunds
@@ -88,10 +91,16 @@ def question2():
     init_tagger = RegexpTagger(patterns)
 
     #Not sure if we need to use BrillTagger or BrillTaggerTrainer??
-    #tagger = BrillTagger(init_tagger)
-    # tagger = BrillTaggerTrainer(init_tagger)
+    #https://www.nltk.org/api/nltk.tag.html#module-nltk.tag.brill_trainer
+    Template._cleartemplates()
+    templates = [Template(Pos([-1])), Template(Pos([-1]), Word([0]))]
+    tt = BrillTaggerTrainer(init_tagger, templates, trace=3)
+    tagger = tt.train(train_sentences)
+
+    print(tagger.evaluate(test_sentences))
+
     return
 
 if __name__ == "__main__":
-    question1()
+    question4()
 
