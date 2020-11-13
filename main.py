@@ -69,7 +69,7 @@ def question3():
 
     tagger.train(train_sentences, 'model.crf.tagger')
 
-    print(tagger.evaluate(train_sentences))
+    print(tagger.evaluate(test_sentences))
     return
 
 """
@@ -104,7 +104,7 @@ def question4():
         templates = [Template(Pos([-1])), Template(Pos([-1]), Word([0]))]
 
         if i == 0:
-            tt = BrillTaggerTrainer(init_tagger, templates, trace=3)
+            tt = BrillTaggerTrainer(init_tagger, templates)
             currentTagger = tt.train(train_sentences)
             current_evaluation = currentTagger.evaluate(test_sentences)
             evaluations.append(current_evaluation)
@@ -120,9 +120,10 @@ def question4():
     return evaluations
 
 if __name__ == "__main__":
+    question3()
     question4_evals = question4()
 
-    with open('question4_evals_Regexp.csv', mode='w+') as employee_file:
+    with open('question4_evals_Regexp_one.csv', mode='w+') as employee_file:
         employee_writer = csv.writer(employee_file, delimiter=',')
 
         employee_writer.writerow(list(range(len(question4_evals))))
