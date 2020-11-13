@@ -1,3 +1,4 @@
+import csv
 import re
 
 import numpy as np
@@ -87,20 +88,43 @@ def question4():
         (r'.*', 'NN')  # nouns (default)
         ]
 
-    train_words = treebank.words()
+    #init_tagger = CRFTagger(feature_func=feature_func)
+    #init_tagger.train(train_sentences, 'model.crf.tagger')
+
     init_tagger = RegexpTagger(patterns)
 
-    #Not sure if we need to use BrillTagger or BrillTaggerTrainer??
-    #https://www.nltk.org/api/nltk.tag.html#module-nltk.tag.brill_trainer
-    Template._cleartemplates()
-    templates = [Template(Pos([-1])), Template(Pos([-1]), Word([0]))]
-    tt = BrillTaggerTrainer(init_tagger, templates, trace=3)
-    tagger = tt.train(train_sentences)
+    nb_iterations = 15
+    currentTagger = None
+    current_evaluation = 0.0
+    evaluations = []
+    for i in range(nb_iterations):
+        #Not sure if we need to use BrillTagger or BrillTaggerTrainer??
+        #https://www.nltk.org/api/nltk.tag.html#module-nltk.tag.brill_trainer
+        Template._cleartemplates()
+        templates = [Template(Pos([-1])), Template(Pos([-1]), Word([0]))]
 
-    print(tagger.evaluate(test_sentences))
+        if i == 0:
+            tt = BrillTaggerTrainer(init_tagger, templates, trace=3)
+            currentTagger = tt.train(train_sentences)
+            current_evaluation = currentTagger.evaluate(test_sentences)
+            evaluations.append(current_evaluation)
 
-    return
+        else:
+            tt = BrillTaggerTrainer(currentTagger, templates, trace=3)
+            tagger = tt.train(train_sentences)
+            current_evaluation = tagger.evaluate(test_sentences)
+            evaluations.append(current_evaluation)
+            currentTagger = tagger
+
+    print(current_evaluation)
+    return evaluations
 
 if __name__ == "__main__":
-    question4()
+    question4_evals = question4()
+
+    with open('question4_evals_Regexp.csv', mode='w+') as employee_file:
+        employee_writer = csv.writer(employee_file, delimiter=',')
+
+        employee_writer.writerow(list(range(len(question4_evals))))
+        employee_writer.writerow(question4_evals)
 
