@@ -93,10 +93,22 @@ def question4():
 
     init_tagger = RegexpTagger(patterns)
 
-    nb_iterations = 15
+    nb_iterations = 31
     currentTagger = None
     current_evaluation = 0.0
     evaluations = []
+
+    for i in range(1, nb_iterations):
+        # https://www.nltk.org/api/nltk.tag.html#module-nltk.tag.brill_trainer
+        Template._cleartemplates()
+        templates = [Template(Pos([-1])), Template(Pos([-1]), Word([0]))]
+
+        tt = BrillTaggerTrainer(init_tagger, templates, trace=3)
+        currentTagger = tt.train(train_sentences, max_rules=i*50)
+        current_evaluation = currentTagger.evaluate(test_sentences)
+        evaluations.append(current_evaluation)
+
+    """
     for i in range(nb_iterations):
         #Not sure if we need to use BrillTagger or BrillTaggerTrainer??
         #https://www.nltk.org/api/nltk.tag.html#module-nltk.tag.brill_trainer
@@ -104,7 +116,7 @@ def question4():
         templates = [Template(Pos([-1])), Template(Pos([-1]), Word([0]))]
 
         if i == 0:
-            tt = BrillTaggerTrainer(init_tagger, templates)
+            tt = BrillTaggerTrainer(init_tagger, templates, trace=3)
             currentTagger = tt.train(train_sentences)
             current_evaluation = currentTagger.evaluate(test_sentences)
             evaluations.append(current_evaluation)
@@ -115,17 +127,17 @@ def question4():
             current_evaluation = tagger.evaluate(test_sentences)
             evaluations.append(current_evaluation)
             currentTagger = tagger
-
+    """
     print(current_evaluation)
     return evaluations
 
 if __name__ == "__main__":
-    question3()
+    #question3()
     question4_evals = question4()
 
-    with open('question4_evals_Regexp_one.csv', mode='w+') as employee_file:
-        employee_writer = csv.writer(employee_file, delimiter=',')
+    with open('question4_meta_max_rules_one.csv', mode='w+') as file:
+        employee_writer = csv.writer(file, delimiter=',')
 
-        employee_writer.writerow(list(range(len(question4_evals))))
+        employee_writer.writerow(list(range(50, len(question4_evals)*50 + 1, 50)))
         employee_writer.writerow(question4_evals)
 
